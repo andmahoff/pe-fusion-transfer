@@ -1,0 +1,10 @@
+cff-version: 1.2.0
+message: "If you use this code, please cite it as below."
+title: "Bidirectional Transfer and Multimodal Fusion for Prognosis After Pulmonary Embolism"
+authors:
+  - family-names: "Machowski"
+    given-names: "Andrzej"
+version: 1.0.0
+date-released: 2026-09-30
+repository-code: "https://github.com/andmahoff/pe-fusion-transfer"
+license: MIT
