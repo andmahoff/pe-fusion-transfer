@@ -14,6 +14,22 @@ The dissertation combined several modalities by late fusion to predict outcomes 
 
 The primary contrast was fixed before any modelling: early against intermediate against late fusion of EHR and CTPA, trained on INSPECT and evaluated on MIMIC-IV, for 30-day death. Every other analysis is secondary and exploratory.
 
+**In brief:**
+1. **Across hospitals, simple fusion is the most that helps.** On the primary contrast no fusion architecture beat the EHR modality alone. Across all four directions and three outcomes, intermediate fusion never helped, while block-standardised early fusion and weighted late fusion gave modest gains.
+2. **The gap between modalities predicts the gain.** The narrower the AUROC gap between the two modalities, the larger the late-fusion gain (r = -0.986).
+3. **Within one hospital, a tree ensemble does better.** A block-stratified random forest over EHR, ECG and CTPA reached nested cross-validated AUROCs of 0.905 for in-hospital death and 0.897 for 30-day death, and beat weighted late fusion significantly on three of four outcomes.
+
+## Cohorts
+
+| Cohort | Size | Used for |
+|---|---|---|
+| INSPECT, EHR and CTPA | 3,300 patients | the transfer grid, as source or target |
+| MIMIC-IV, EHR and CTPA | 1,649 admissions | the transfer grid, as source or target |
+| MIMIC-IV, EHR, ECG and CTPA | 1,636 admissions | the three-modality models, including the final model |
+| MIMIC-IV, EHR and ECG | 3,501 admissions | EHR and ECG models, and the missing-CTPA analyses |
+
+Events in INSPECT and MIMIC-IV respectively: 30-day death 246 and 152, the 30-day composite 505 and 219, and cardiovascular readmission 288 and 76.
+
 ## Key results
 
 **Primary contrast (INSPECT to MIMIC-IV, 30-day death).** No fusion architecture was significantly better than the EHR modality alone (AUROC 0.8460). Block-standardised early fusion had the largest gain, +0.0197, but its interval (-0.0012 to +0.0400) includes zero. Four intermediate variants were significantly worse, including plain joint encoders at 0.8026 (-0.0427).
@@ -45,7 +61,7 @@ The primary contrast was fixed before any modelling: early against intermediate 
 
 **Calibration by fusion family.** Weighted late fusion was the best calibrated, with a median calibration slope of 0.86 (range 0.72 to 1.28). Intermediate fusion was badly over-confident (median 0.21), and block-standardised early fusion was under-confident (median 1.51).
 
-**Final three-modality model.** A block-stratified random forest on EHR, ECG and CTPA features, on 1,636 MIMIC-IV admissions with all three modalities. The figures below come from nested cross-validation, in which the tuning is repeated inside each outer fold.
+**Final three-modality model.** A block-stratified random forest on EHR, ECG and CTPA features, trained and tested within MIMIC-IV on the 1,636 admissions with all three modalities. In a block-stratified forest, each tree draws a fixed number of columns from each modality rather than a random draw from all of them, so the strong EHR block cannot crowd out the weaker ECG and CTPA blocks. The columns also include canonical-correlation variates that link each pair of modalities. The figures below come from nested cross-validation, in which the tuning is repeated inside each outer fold.
 
 | Outcome | Nested-CV AUROC | Optimism removed | Net benefit above treat-all and treat-none |
 |---|---|---|---|
@@ -55,6 +71,8 @@ The primary contrast was fixed before any modelling: early against intermediate 
 | Cardiovascular readmission | 0.8190 | 0.0024 | thresholds 1% to 36% |
 
 After Platt scaling the calibration slopes were 0.92 to 0.96. The tuned settings form a plateau rather than a sharp optimum: 29 of 32 draw-by-regularisation combinations were statistically tied with their outcome's best.
+
+Against weighted late fusion of the same three modalities on the same admissions, the block forest gained +0.0423 on in-hospital death, +0.0189 on 30-day death and +0.0098 on the composite, each with a paired bootstrap interval excluding zero. On cardiovascular readmission the gain was +0.0072, with an interval including zero. These comparisons use the non-nested figures for both models.
 
 <p align="center">
   <img src="figures/fig_dca_death30d.png" width="700" alt="Decision curve for 30-day death">
@@ -118,6 +136,21 @@ The analysis environment uses Python 3.11 and the CPU build of PyTorch. To insta
 Script 41 prompts for a PhysioNet password when it runs; nothing is stored. Scripts 58 and 61 expect the PTB-XL benchmarking outputs at `~/ecg_ptbxl_benchmarking/output/exp0/`. Scripts 50, 51 and 59 read PTB-XL checkpoints saved by the dissertation, under `PE_DISS_DIR/HPC`.
 
 **R figures.** The R scripts use ggplot2, dplyr, ragg, systemfonts and scales. They read their tables from `Documents/Data Science/SideProject/data/processed` and save images to `Documents/Data Science/SideProject/R Graphs`, both under the Windows user profile. Change `data_dir` and `fig_dir` at the top of a script to run it elsewhere. The tables they need are in `results/`.
+
+## Start here
+
+The scripts behind the headline results:
+
+| Result | Script | Results table |
+|---|---|---|
+| Shared loaders, fusion families and paired bootstrap | `fusion_lib.py` | |
+| Transfer grid and primary contrast | `08_grid.py` | `grid_summary.csv` |
+| Calibration by fusion family | `09_calibration.py` | `calibration.csv` |
+| Gap rule | `10_gap_mechanism.py` | `gap_table.csv` |
+| Gap rule on the three-modality cohort | `99_coordinated_3mod.py` | `coord3_cancorr.csv` |
+| Three-modality block forest against late fusion | `117_three_mod_block.py` | `three_mod_block.csv` |
+| Final settings and the rotation test | `130_block_final.py` | `block_final.csv` |
+| Nested validation and decision curves | `131_validate_final.py` | `validate_final.csv`, `validate_final_dca.csv` |
 
 ## How the scripts are organised
 
