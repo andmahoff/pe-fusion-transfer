@@ -4,6 +4,14 @@ Post-dissertation side project, 2026. It extends the MSc Data Science dissertati
 
 This repository holds the analysis code, the R figure scripts and the aggregate result tables. It is research code shared for transparency and reproducibility, not a maintained software package.
 
+**Part of a three-project series on prognosis after acute pulmonary embolism (PE):**
+
+| Part | Repository | Question |
+|---|---|---|
+| 1 | [pe-multimodal-prognosis-msc](https://github.com/andmahoff/pe-multimodal-prognosis-msc) | MSc dissertation. Does late fusion of EHR, ECG, CTPA report and CXR features improve the prediction of 30-day outcomes after PE? |
+| 2 | **pe-fusion-transfer** (this repository) | Which fusion methods still help when models move between hospitals, in both directions between Stanford INSPECT and MIMIC-IV? |
+| 3 | [pe-survival-prognosis](https://github.com/andmahoff/pe-survival-prognosis) | The MIMIC-IV cohort as time-to-event data: risk of death and readmission at any point up to one year, from diagnosis and from discharge. |
+
 ## Summary
 
 The dissertation combined several modalities by late fusion to predict outcomes after acute pulmonary embolism (PE). This project asks three follow-up questions:
@@ -175,6 +183,10 @@ Some numbers are absent. They were diagnostics of the local machine, empty files
 - **Tuning optimism.** Except for script 131, every figure was tuned on the same out-of-fold predictions it was scored on. Script 131's nested cross-validation puts the resulting optimism at 0.002 to 0.012 AUROC for the final model.
 - **Leaf size in scripts 118 to 127.** These scripts fixed the forest's minimum leaf size at 1. Scripts 128 and 129 showed this lowers the block-forest AUROC by 0.007 to 0.025, so the block-forest figures from 118 to 127 are lower bounds. Script 129 repeats the missing-CTPA comparison at a swept leaf size, and its conclusion holds.
 - **INSPECT age.** Age is derived as the year of the PE minus the year of birth, giving a median of 62 against the dissertation's 70. The offset applies equally to every comparison.
+
+## Follow-up work
+
+[pe-survival-prognosis](https://github.com/andmahoff/pe-survival-prognosis) re-analyses the MIMIC-IV cohort as time-to-event data. Survival super learners predict death and cardiovascular readmission at 10 to 365 days, from diagnosis and from discharge, under a pre-registered analysis plan. Its transfer analysis moves EHR and CTPA death models between MIMIC-IV and INSPECT, as this project did for 30-day outcomes.
 
 ## Citation and licence
 
