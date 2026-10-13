@@ -25,7 +25,8 @@ The primary contrast was fixed before any modelling: early against intermediate 
 **In brief:**
 1. **Across hospitals, simple fusion is the most that helps.** On the primary contrast, no fusion architecture beat the EHR modality alone. However, across all four directions and three outcomes, block-standardised early fusion and weighted late fusion gave modest gains, while intermediate fusion never helped.
 2. **The gap between modalities predicts the gain.** The narrower the AUROC gap between the two modalities, the larger the late-fusion gain (r = -0.986).
-3. **Within one hospital, a tree ensemble does better.** A block-stratified random forest over EHR, ECG and CTPA reached nested cross-validated AUROCs of 0.905 for in-hospital death and 0.897 for 30-day death. It also beat weighted late fusion significantly on three of four outcomes.
+3. **Within one hospital, a tree ensemble does better.** A block-stratified random forest over EHR, ECG and CTPA reached nested cross-validated AUROCs of 0.905 for in-hospital death and 0.897 for 30-day death. In a non-nested comparison, it also beat weighted late fusion significantly on three of four outcomes.
+4. **It re-tested the dissertation.** The gap rule generalised the dissertation's finding that fusion helps least when one modality dominates. However, the dissertation's small transfer cost for CTPA report text did not reproduce (see [How this builds on the dissertation](#how-this-builds-on-the-dissertation)).
 
 ## Cohorts
 
@@ -94,6 +95,15 @@ The block forest was also compared with weighted late fusion of the same three m
 - Using the 1,865 admissions without a CTPA report for training, with CTPA left missing, did worse than ignoring CTPA altogether on all four outcomes (-0.0058 to -0.0266).
 - Rotation forests gave no significant gain over the plain block forest, as every paired bootstrap interval spanned zero.
 - Evidential (Dempster-Shafer) fusion did not beat weighted rank averaging with any of its four ignorance strategies.
+
+## How this builds on the dissertation
+
+This project started by rebuilding the dissertation's EHR and CTPA modalities and reproducing its main result, and it then re-tested three of the dissertation's conclusions.
+
+- **Reproduction.** Rerun on about 1,635 admissions, the dissertation's three-modality model reached an AUROC of 0.8720 for 30-day death, against 0.8715 in the dissertation. However, the ECG added only 0.0002 to the EHR and CTPA, where the dissertation reported 0.0081.
+- **The gap mechanism (confirmed).** The dissertation showed the fusion gain shrinking as it strengthened the EHR modality by design. Here the same pattern held across the natural variation of 4 train and test directions and 3 outcomes, as the gap rule above shows.
+- **Fusion rules (partly confirmed).** As in the dissertation, neural fusion did not help, since intermediate fusion was never significantly better than the EHR alone in 84 cells. However, the dissertation found no combination rule significantly better than weighted rank averaging. Here, a feature-level block-stratified forest beat it within MIMIC-IV on three of four outcomes, although only in a non-nested comparison.
+- **CTPA transfer (not reproduced).** In the dissertation, the CTPA modality trained on INSPECT lost 0.0175 AUROC for 30-day death against one trained within MIMIC-IV, and nothing on the composite. With the two models compared on the same 38 features and 1,636 admissions, the cost here was 0.081 for 30-day death and 0.072 for the composite. The INSPECT-trained model scored 0.691 for 30-day death against 0.741 in the dissertation, and the reason for the difference was not established. However, the dissertation's fused models used a CTPA modality trained within MIMIC-IV, so they are unaffected.
 
 ## Data access
 
@@ -187,6 +197,8 @@ Some script numbers are absent from the sequence, because those scripts were dia
 ## Follow-up work
 
 The follow-up repository [pe-survival-prognosis](https://github.com/andmahoff/pe-survival-prognosis) re-analyses the MIMIC-IV cohort as time-to-event data, where survival super learners predict death and cardiovascular readmission at 10 to 365 days, from diagnosis and from discharge, under a pre-registered analysis plan. In addition, its transfer analysis moves EHR and CTPA death models between MIMIC-IV and INSPECT, as this project did for 30-day outcomes.
+
+That project later re-tested two results from this one. Firstly, a survival block forest beat late fusion for 30-day death in the EHR and ECG cohort (+0.016, 0.002 to 0.029), but not in the three-modality cohort (-0.004, -0.020 to 0.013). In that project, late fusion was a Cox stack of the modality scores rather than weighted rank averaging. Therefore, the block forest's advantage here may depend on the late-fusion comparator, on parts of this implementation such as the CCA variates, or on the binary outcome. Secondly, with an EHR modality trained within MIMIC-IV, adding the ECG raised the AUROC by at most 0.016 in the EHR and ECG cohort, which fits the gap rule.
 
 ## Citation and licence
 
